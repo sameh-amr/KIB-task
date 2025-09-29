@@ -18,7 +18,7 @@ import { CachingModule } from 'src/infrastructure/cache/caching.module';
 
 
 @Module({
-  imports: [CqrsModule, PersistenceModule, TmdbModule],
+  imports: [CqrsModule, PersistenceModule, TmdbModule,CachingModule],
   providers: [
     ListGenresHandler,
     ListMoviesHandler,
@@ -32,7 +32,7 @@ import { CachingModule } from 'src/infrastructure/cache/caching.module';
     AddFavoriteHandler,
     RemoveFavoriteHandler,
     ListFavoritesHandler,
-    CachingModule
+    
   ],
   exports: [CqrsModule],
 })
