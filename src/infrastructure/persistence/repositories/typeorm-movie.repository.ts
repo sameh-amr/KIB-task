@@ -10,7 +10,7 @@ import { BaseTypeormRepository } from './base.repository';
 import { Mapper } from '../mappers/mapper';
 import type { NewMovie } from '../../../domain/models/new-movie';
 
-const MovieMapper: Mapper<Movie, MovieEntity> = {
+const MovieMapper: Mapper<Movie, MovieEntity, NewMovie> = {
   toDomain: (e) => ({
     id: e.id,
     tmdbId: e.tmdbId,
@@ -43,9 +43,6 @@ export class TypeormMovieRepository
     @InjectRepository(MovieEntity) repo: Repository<MovieEntity>,
   ) {
     super(repo, MovieMapper);
-  }
-  create(data: Movie): Promise<Movie> {
-    throw new Error('Method not implemented.');
   }
 
   async findByTmdbId(tmdbId: number): Promise<Movie | null> {
