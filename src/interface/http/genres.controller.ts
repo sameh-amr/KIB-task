@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
-import { ListGenresQuery } from '../../application/queries/genres/list-genres.query';
+import { ListGenresQuery } from '../../application/queries/genres/list-genres/list-genres.query';
 
 @Controller('genres')
 export class GenresController {
