@@ -5,11 +5,18 @@ import { ListMoviesHandler } from './queries/movies/list-movies/list-movies.hand
 import { GetMovieHandler } from './queries/movies/get-movie/get-movie.handler';
 import { PersistenceModule } from '../infrastructure/persistence/persistence.module';
 import { TmdbModule } from '../infrastructure/clients/tmdb/tmdb.module';
-
+import { GetTmdbGenresHandler } from './queries/tmdb/get-tmdb-genres/get-tmdb-genres.handler';
+import { GetTmdbPopularMoviesHandler } from './queries/tmdb/get-tmdb-popular-movies/get-tmdb-popular-movies.handler';
 
 @Module({
-  imports: [CqrsModule, PersistenceModule,TmdbModule],
-  providers: [ListGenresHandler, ListMoviesHandler, GetMovieHandler],
+  imports: [CqrsModule, PersistenceModule, TmdbModule],
+  providers: [
+    ListGenresHandler,
+    ListMoviesHandler,
+    GetMovieHandler,
+    GetTmdbGenresHandler,
+    GetTmdbPopularMoviesHandler,
+  ],
   exports: [CqrsModule],
 })
 export class ApplicationModule {}
