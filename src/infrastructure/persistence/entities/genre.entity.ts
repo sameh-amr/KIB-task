@@ -1,4 +1,5 @@
-import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, Index, ManyToMany } from 'typeorm';
+import { MovieEntity } from './movie.entity';
 
 @Entity('genres')
 export class GenreEntity {
@@ -6,8 +7,12 @@ export class GenreEntity {
   id: number;
 
   @Index({ unique: true })
-  @Column({ type: 'int', nullable: true }) // nullable for smooth migration; we’ll enforce uniqueness where not null
+  @Column({ type: 'int', nullable: true })
   tmdbId: number | null;
+
   @Column({ type: 'varchar', length: 120, unique: true })
   name: string;
+
+  @ManyToMany(() => MovieEntity, (m) => m.genres, { cascade: false })
+  movies?: MovieEntity[];
 }
