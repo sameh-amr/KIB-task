@@ -31,7 +31,6 @@ async function bootstrap() {
 
   const auto = (process.env.AUTO_SYNC_ON_BOOT ?? '1').toLowerCase();
   if (auto === '1' || auto === 'true') {
-    console.log('gere');
     const pages = Number(process.env.SYNC_MOVIE_PAGES ?? 1);
     const bus = app.get(CommandBus);
     try {

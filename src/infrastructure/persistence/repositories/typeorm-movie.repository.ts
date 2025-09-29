@@ -58,10 +58,11 @@ export class TypeormMovieRepository
     const limit = Math.min(50, Math.max(1, Number(params.limit ?? 10)));
     const offset = (page - 1) * limit;
 
-    const qb = this.repo
-      .createQueryBuilder('m')
-      .leftJoin('m.genres', 'g')
+    // Build query
+    const qb = this.repo.createQueryBuilder('m')
+      // join ratings table to compute AVG; use table name to avoid needing a relation
       .leftJoin('ratings', 'r', 'r.movie_id = m.id')
+      .leftJoin('movie_genres', 'mg', 'mg.movie_id = m.id') // for filtering by genre
       .select([
         'm.id AS id',
         'm.tmdbId AS "tmdbId"',
@@ -70,14 +71,13 @@ export class TypeormMovieRepository
       ])
       .addSelect('AVG(r.value)', 'averageRating');
 
-    if (params.q) {
-      qb.andWhere('m.title ILIKE :q', { q: `%${params.q}%` });
-    }
-    if (params.genreId) {
-      qb.andWhere('g.id = :genreId', { genreId: params.genreId });
-    }
+    if (params.q) qb.andWhere('m.title ILIKE :q', { q: `%${params.q}%` });
+    if (params.genreId) qb.andWhere('mg.genre_id = :genreId', { genreId: params.genreId });
 
-    qb.groupBy('m.id').orderBy('m.title', 'ASC').skip(offset).take(limit);
+    qb.groupBy('m.id')
+      .orderBy('m.title', 'ASC')
+      .skip(offset)
+      .take(limit);
 
     const rows = await qb.getRawMany<{
       id: string | number;
@@ -87,12 +87,13 @@ export class TypeormMovieRepository
       averageRating: string | null;
     }>();
 
-    // Count (distinct movies with the same filters)
-    const countQb = this.repo.createQueryBuilder('m').leftJoin('m.genres', 'g');
+    // Count with same filters (distinct movies)
+    const countQb = this.repo.createQueryBuilder('m')
+      .leftJoin('movie_genres', 'mg', 'mg.movie_id = m.id')
+      .select('m.id')
+      .distinct(true);
     if (params.q) countQb.andWhere('m.title ILIKE :q', { q: `%${params.q}%` });
-    if (params.genreId)
-      countQb.andWhere('g.id = :genreId', { genreId: params.genreId });
-    countQb.select('m.id').distinct(true);
+    if (params.genreId) countQb.andWhere('mg.genre_id = :genreId', { genreId: params.genreId });
     const total = await countQb.getCount();
 
     const data: MovieListItem[] = rows.map((r) => ({
@@ -105,6 +106,7 @@ export class TypeormMovieRepository
 
     return { data, page, limit, total };
   }
+
   async setGenres(movieId: number, genreIds: number[]): Promise<void> {
     const wanted = Array.from(new Set(genreIds));
     const movie = await this.repo.findOne({

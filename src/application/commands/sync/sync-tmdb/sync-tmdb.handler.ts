@@ -23,7 +23,6 @@ export class SyncTmdbHandler implements ICommandHandler<SyncTmdbCommand> {
 
   async execute({ pages }: SyncTmdbCommand) {
     try {
-        console.log('jereee')
       const genres = await this.tmdb.fetchGenres();
     
       const gRes = await this.bus.execute(
