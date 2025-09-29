@@ -11,6 +11,9 @@ import { UpsertGenresHandler } from './commands/genres/upsert-genres/upsert-genr
 import { UpsertMoviesHandler } from './commands/movies/upsert-movies/upsert-movies.handler';
 import { SyncTmdbHandler } from './commands/sync/sync-tmdb/sync-tmdb.handler';
 import { RateMovieHandler } from './commands/ratings/rate-movie/rate-movie.handler';
+import { AddFavoriteHandler } from './commands/favorites/add-favorite/add-favorite.handler';
+import { RemoveFavoriteHandler } from './commands/favorites/remove-favorite/remove-favorite.handler';
+import { ListFavoritesHandler } from './queries/favorites/list-favorites/list-favorites.handler';
 
 @Module({
   imports: [CqrsModule, PersistenceModule, TmdbModule],
@@ -24,6 +27,9 @@ import { RateMovieHandler } from './commands/ratings/rate-movie/rate-movie.handl
     UpsertMoviesHandler,
     SyncTmdbHandler,
     RateMovieHandler,
+    AddFavoriteHandler,
+    RemoveFavoriteHandler,
+    ListFavoritesHandler
   ],
   exports: [CqrsModule],
 })
