@@ -13,7 +13,7 @@ export class UpsertGenresHandler
     try {
       let inserted = 0;
       for (const g of items) {
-        const exists = await this.genres.findByName(g.name);
+        const exists = await this.genres.findByTmdbId(g.tmdbId);
         if (!exists) {
           await this.genres.create(g);
           inserted++;

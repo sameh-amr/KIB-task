@@ -21,7 +21,7 @@ export class SyncTmdbHandler implements ICommandHandler<SyncTmdbCommand> {
     try {
       const genres = await this.tmdb.fetchGenres();
       const gRes = await this.bus.execute(
-        new UpsertGenresCommand(genres.map((g) => ({ name: g.name }))),
+        new UpsertGenresCommand(genres.map((g) => ({tmdbId: g.id, name: g.name }))),
       );
 
       const max = Math.max(1, Math.min(5, pages ?? 1)); // simple cap
