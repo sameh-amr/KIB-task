@@ -8,6 +8,7 @@ import { MovieRepository } from '../../../domain/repositories/movie.repository';
 import { MovieEntity } from '../entities/movie.entity';
 import { BaseTypeormRepository } from './base.repository';
 import { Mapper } from '../mappers/mapper';
+import type { NewMovie } from '../../../domain/models/new-movie';
 
 const MovieMapper: Mapper<Movie, MovieEntity> = {
   toDomain: (e) => ({
@@ -24,14 +25,18 @@ const MovieMapper: Mapper<Movie, MovieEntity> = {
     e.releaseDate = m.releaseDate;
     return e;
   },
-  fromCreate: function (data: Movie): MovieEntity {
-    throw new Error('Function not implemented.');
-  }
+  fromCreate: (data) => {
+    const e = new MovieEntity();
+    e.tmdbId = data.tmdbId;
+    e.title = data.title;
+    e.releaseDate = data.releaseDate;
+    return e;
+  },
 };
 
 @Injectable()
 export class TypeormMovieRepository
-  extends BaseTypeormRepository<Movie, MovieEntity>
+  extends BaseTypeormRepository<Movie, MovieEntity, number, NewMovie>
   implements MovieRepository
 {
   constructor(

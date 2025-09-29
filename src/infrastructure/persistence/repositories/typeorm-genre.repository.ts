@@ -8,23 +8,27 @@ import { GenreRepository } from '../../../domain/repositories/genre.repository';
 import { GenreEntity } from '../entities/genre.entity';
 import { BaseTypeormRepository } from './base.repository';
 import { Mapper } from '../mappers/mapper';
+import type { NewGenre } from '../../../domain/models/new-genre';
 
-const GenreMapper: Mapper<Genre, GenreEntity> = {
+
+const GenreMapper: Mapper<Genre, GenreEntity, NewGenre> = {
   toDomain: (e) => ({ id: e.id, name: e.name }),
   toEntity: (g) => {
     const e = new GenreEntity();
-    e.id = g.id;
+    if ((g as any).id !== undefined) e.id = (g as any).id;
     e.name = g.name;
     return e;
   },
-  fromCreate: function (data: Genre): GenreEntity {
-    throw new Error('Function not implemented.');
-  }
+  fromCreate: (data) => {
+    const e = new GenreEntity();
+    e.name = data.name;
+    return e;
+  },
 };
 
 @Injectable()
 export class TypeormGenreRepository
-  extends BaseTypeormRepository<Genre, GenreEntity>
+  extends BaseTypeormRepository<Genre, GenreEntity, number, NewGenre>
   implements GenreRepository
 {
   constructor(
