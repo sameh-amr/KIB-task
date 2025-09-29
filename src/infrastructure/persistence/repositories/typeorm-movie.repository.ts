@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 
 import type { Movie } from '../../../domain/models/movie';
 import { MovieRepository } from '../../../domain/repositories/movie.repository';
@@ -48,12 +48,46 @@ export class TypeormMovieRepository
     super(repo, MovieMapper);
   }
   async setGenres(movieId: number, genreIds: number[]): Promise<void> {
-    const genres = await this.genreRepo.findByIds(genreIds);
-    await this.repo
-      .createQueryBuilder()
-      .relation(MovieEntity, 'genres')
-      .of(movieId)
-      .set(genres); // replace all relations
+    const wanted = Array.from(new Set(genreIds));
+    const movie = await this.repo.findOne({
+      where: { id: movieId },
+      relations: { genres: true },
+    });
+    if (!movie) return;
+    if (wanted.length === 0) {
+      if (movie.genres?.length) {
+        await this.repo
+          .createQueryBuilder()
+          .relation(MovieEntity, 'genres')
+          .of(movieId)
+          .remove(movie.genres.map((g) => g.id));
+      }
+      return;
+    }
+
+    const targetGenres = await this.genreRepo.find({
+      where: { id: In(wanted) },
+    });
+    const currentIds = new Set(movie.genres?.map((g) => g.id) ?? []);
+    const targetIds = new Set(targetGenres.map((g) => g.id));
+    const toAdd = [...targetIds].filter((id) => !currentIds.has(id));
+    const toRemove = [...currentIds].filter((id) => !targetIds.has(id));
+
+    if (toAdd.length) {
+      await this.repo
+        .createQueryBuilder()
+        .relation(MovieEntity, 'genres')
+        .of(movieId)
+        .add(toAdd);
+    }
+
+    if (toRemove.length) {
+      await this.repo
+        .createQueryBuilder()
+        .relation(MovieEntity, 'genres')
+        .of(movieId)
+        .remove(toRemove);
+    }
   }
 
   async findByTmdbId(tmdbId: number): Promise<Movie | null> {
