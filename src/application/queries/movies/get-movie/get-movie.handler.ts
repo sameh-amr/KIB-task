@@ -7,6 +7,10 @@ export class GetMovieHandler implements IQueryHandler<GetMovieQuery> {
   constructor(private readonly movies: MovieRepository) {}
 
   async execute(query: GetMovieQuery) {
-    return this.movies.findById(query.id); 
+    try {
+      return this.movies.findById(query.id);
+    } catch (err) {
+      console.log(err);
+    }
   }
 }

@@ -7,6 +7,10 @@ export class ListGenresHandler implements IQueryHandler<ListGenresQuery> {
   constructor(private readonly genres: GenreRepository) {}
 
   async execute(_: ListGenresQuery) {
-    return this.genres.findAll();
+    try {
+      return this.genres.findAll();
+    } catch (err) {
+      console.log(err);
+    }
   }
 }

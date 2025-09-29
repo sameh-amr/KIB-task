@@ -7,6 +7,10 @@ export class ListMoviesHandler implements IQueryHandler<ListMoviesQuery> {
   constructor(private readonly movies: MovieRepository) {}
 
   async execute(_: ListMoviesQuery) {
-    return this.movies.findAll();
+    try {
+      return this.movies.findAll();
+    } catch (err) {
+      console.log(err);
+    }
   }
 }

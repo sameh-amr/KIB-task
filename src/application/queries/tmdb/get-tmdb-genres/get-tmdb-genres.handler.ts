@@ -7,6 +7,10 @@ export class GetTmdbGenresHandler implements IQueryHandler<GetTmdbGenresQuery> {
   constructor(private readonly tmdb: TmdbService) {}
 
   async execute() {
-    return this.tmdb.fetchGenres(); 
+    try {
+      return this.tmdb.fetchGenres();
+    } catch (err) {
+      console.log(err);
+    }
   }
 }
