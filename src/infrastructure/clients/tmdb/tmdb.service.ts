@@ -3,7 +3,7 @@ import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 
 type TmdbGenre = { id: number; name: string };
-type TmdbMovie = { id: number; title: string; release_date?: string | null };
+type TmdbMovie = { id: number; title: string; release_date?: string | null, genre_ids?: number[];};
 
 @Injectable()
 export class TmdbService {
