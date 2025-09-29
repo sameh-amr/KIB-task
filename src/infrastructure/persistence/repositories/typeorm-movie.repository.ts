@@ -9,6 +9,7 @@ import { MovieEntity } from '../entities/movie.entity';
 import { BaseTypeormRepository } from './base.repository';
 import { Mapper } from '../mappers/mapper';
 import type { NewMovie } from '../../../domain/models/new-movie';
+import { GenreEntity } from '../entities/genre.entity';
 
 const MovieMapper: Mapper<Movie, MovieEntity, NewMovie> = {
   toDomain: (e) => ({
@@ -41,8 +42,18 @@ export class TypeormMovieRepository
 {
   constructor(
     @InjectRepository(MovieEntity) repo: Repository<MovieEntity>,
+    @InjectRepository(GenreEntity)
+    private readonly genreRepo: Repository<GenreEntity>,
   ) {
     super(repo, MovieMapper);
+  }
+  async setGenres(movieId: number, genreIds: number[]): Promise<void> {
+    const genres = await this.genreRepo.findByIds(genreIds);
+    await this.repo
+      .createQueryBuilder()
+      .relation(MovieEntity, 'genres')
+      .of(movieId)
+      .set(genres); // replace all relations
   }
 
   async findByTmdbId(tmdbId: number): Promise<Movie | null> {
