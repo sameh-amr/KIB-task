@@ -1,1 +1,1 @@
-export type NewGenre = { name: string };
+export type NewGenre = { tmdbId: number; name: string };
