@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 
 import type { Movie } from '../../../domain/models/movie';
+
 import { MovieRepository } from '../../../domain/repositories/movie.repository';
 
 import { MovieEntity } from '../entities/movie.entity';
@@ -10,6 +11,11 @@ import { BaseTypeormRepository } from './base.repository';
 import { Mapper } from '../mappers/mapper';
 import type { NewMovie } from '../../../domain/models/new-movie';
 import { GenreEntity } from '../entities/genre.entity';
+import {
+  ListMoviesParams,
+  Paginated,
+  MovieListItem,
+} from 'src/domain/models/lists/movie-listing';
 
 const MovieMapper: Mapper<Movie, MovieEntity, NewMovie> = {
   toDomain: (e) => ({
@@ -46,6 +52,58 @@ export class TypeormMovieRepository
     private readonly genreRepo: Repository<GenreEntity>,
   ) {
     super(repo, MovieMapper);
+  }
+  async search(params: ListMoviesParams): Promise<Paginated<MovieListItem>> {
+    const page = Math.max(1, Number(params.page ?? 1));
+    const limit = Math.min(50, Math.max(1, Number(params.limit ?? 10)));
+    const offset = (page - 1) * limit;
+
+    const qb = this.repo
+      .createQueryBuilder('m')
+      .leftJoin('m.genres', 'g')
+      .leftJoin('ratings', 'r', 'r.movie_id = m.id')
+      .select([
+        'm.id AS id',
+        'm.tmdbId AS "tmdbId"',
+        'm.title AS title',
+        'm.releaseDate AS "releaseDate"',
+      ])
+      .addSelect('AVG(r.value)', 'averageRating');
+
+    if (params.q) {
+      qb.andWhere('m.title ILIKE :q', { q: `%${params.q}%` });
+    }
+    if (params.genreId) {
+      qb.andWhere('g.id = :genreId', { genreId: params.genreId });
+    }
+
+    qb.groupBy('m.id').orderBy('m.title', 'ASC').skip(offset).take(limit);
+
+    const rows = await qb.getRawMany<{
+      id: string | number;
+      tmdbId: string | number;
+      title: string;
+      releaseDate: Date | null;
+      averageRating: string | null;
+    }>();
+
+    // Count (distinct movies with the same filters)
+    const countQb = this.repo.createQueryBuilder('m').leftJoin('m.genres', 'g');
+    if (params.q) countQb.andWhere('m.title ILIKE :q', { q: `%${params.q}%` });
+    if (params.genreId)
+      countQb.andWhere('g.id = :genreId', { genreId: params.genreId });
+    countQb.select('m.id').distinct(true);
+    const total = await countQb.getCount();
+
+    const data: MovieListItem[] = rows.map((r) => ({
+      id: Number(r.id),
+      tmdbId: Number(r.tmdbId),
+      title: r.title,
+      releaseDate: r.releaseDate ? new Date(r.releaseDate) : null,
+      averageRating: r.averageRating != null ? Number(r.averageRating) : null,
+    }));
+
+    return { data, page, limit, total };
   }
   async setGenres(movieId: number, genreIds: number[]): Promise<void> {
     const wanted = Array.from(new Set(genreIds));
