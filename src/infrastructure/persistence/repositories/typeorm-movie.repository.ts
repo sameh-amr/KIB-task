@@ -53,59 +53,76 @@ export class TypeormMovieRepository
   ) {
     super(repo, MovieMapper);
   }
-  async search(params: ListMoviesParams): Promise<Paginated<MovieListItem>> {
-    const page = Math.max(1, Number(params.page ?? 1));
-    const limit = Math.min(50, Math.max(1, Number(params.limit ?? 10)));
-    const offset = (page - 1) * limit;
+async search(params: ListMoviesParams): Promise<Paginated<MovieListItem>> {
+  const page  = Math.max(1, Number(params.page ?? 1));
+  const limit = Math.min(50, Math.max(1, Number(params.limit ?? 10)));
+  const offset = (page - 1) * limit;
 
-    // Build query
-    const qb = this.repo.createQueryBuilder('m')
-      // join ratings table to compute AVG; use table name to avoid needing a relation
-      .leftJoin('ratings', 'r', 'r.movie_id = m.id')
-      .leftJoin('movie_genres', 'mg', 'mg.movie_id = m.id') // for filtering by genre
-      .select([
-        'm.id AS id',
-        'm.tmdbId AS "tmdbId"',
-        'm.title AS title',
-        'm.releaseDate AS "releaseDate"',
-      ])
-      .addSelect('AVG(r.value)', 'averageRating');
+  // Base: movies only, with optional filters
+  const base = this.repo.createQueryBuilder('m');
 
-    if (params.q) qb.andWhere('m.title ILIKE :q', { q: `%${params.q}%` });
-    if (params.genreId) qb.andWhere('mg.genre_id = :genreId', { genreId: params.genreId });
+  if (params.q) {
+    base.andWhere('m.title ILIKE :q', { q: `%${params.q}%` });
+  }
+  if (params.genreId) {
+    // Avoid join duplicates: filter with EXISTS instead of join
+    base.andWhere(`
+      EXISTS (
+        SELECT 1 FROM movie_genres mg
+        WHERE mg.movie_id = m.id AND mg.genre_id = :genreId
+      )
+    `, { genreId: params.genreId });
+  }
 
-    qb.groupBy('m.id')
-      .orderBy('m.title', 'ASC')
-      .skip(offset)
-      .take(limit);
+  // Total (same filters)
+  const total = await base.clone().getCount();
 
-    const rows = await qb.getRawMany<{
-      id: string | number;
-      tmdbId: string | number;
-      title: string;
-      releaseDate: Date | null;
-      averageRating: string | null;
+  // Page (same filters) — clean ORDER BY so skip/take works
+  const pageRows = await base.clone()
+    .select([
+      'm.id   AS id',
+      'm.tmdbId AS "tmdbId"',
+      'm.title AS title',
+      'm.releaseDate AS "releaseDate"',
+    ])
+    .orderBy('m.title', 'ASC')
+    .addOrderBy('m.id', 'ASC')   // deterministic tiebreaker
+    .skip(offset)
+    .take(limit)
+    .getRawMany<{
+      id: string|number; tmdbId: string|number; title: string; releaseDate: Date|null;
     }>();
 
-    // Count with same filters (distinct movies)
-    const countQb = this.repo.createQueryBuilder('m')
-      .leftJoin('movie_genres', 'mg', 'mg.movie_id = m.id')
-      .select('m.id')
-      .distinct(true);
-    if (params.q) countQb.andWhere('m.title ILIKE :q', { q: `%${params.q}%` });
-    if (params.genreId) countQb.andWhere('mg.genre_id = :genreId', { genreId: params.genreId });
-    const total = await countQb.getCount();
+  const ids = pageRows.map(r => Number(r.id));
+  if (ids.length === 0) return { data: [], page, limit, total };
 
-    const data: MovieListItem[] = rows.map((r) => ({
-      id: Number(r.id),
-      tmdbId: Number(r.tmdbId),
-      title: r.title,
-      releaseDate: r.releaseDate ? new Date(r.releaseDate) : null,
-      averageRating: r.averageRating != null ? Number(r.averageRating) : null,
-    }));
+  // Averages for just the page IDs (single GROUP BY)
+  const avgRows = await this.repo.manager
+    .createQueryBuilder()
+    .select('r.movie_id', 'movieId')
+    .addSelect('AVG(r.value)', 'avg')
+    .from('ratings', 'r')
+    .where('r.movie_id IN (:...ids)', { ids })
+    .groupBy('r.movie_id')
+    .getRawMany<{ movieId: string|number; avg: string }>();
 
-    return { data, page, limit, total };
-  }
+  const avgMap = new Map<number, number>();
+  for (const r of avgRows) avgMap.set(Number(r.movieId), Number(r.avg));
+
+  // Merge & return
+  const data: MovieListItem[] = pageRows.map(r => ({
+    id: Number(r.id),
+    tmdbId: Number(r.tmdbId),
+    title: r.title,
+    releaseDate: r.releaseDate ? new Date(r.releaseDate) : null,
+    averageRating: avgMap.get(Number(r.id)) ?? null,
+  }));
+
+  return { data, page, limit, total };
+}
+
+
+
 
   async setGenres(movieId: number, genreIds: number[]): Promise<void> {
     const wanted = Array.from(new Set(genreIds));
