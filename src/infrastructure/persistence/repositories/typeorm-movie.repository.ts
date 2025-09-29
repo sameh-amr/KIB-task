@@ -36,6 +36,9 @@ export class TypeormMovieRepository
   ) {
     super(repo, MovieMapper);
   }
+  create(data: Movie): Promise<Movie> {
+    throw new Error('Method not implemented.');
+  }
 
   async findByTmdbId(tmdbId: number): Promise<Movie | null> {
     const entity = await this.repo.findOne({ where: { tmdbId } });

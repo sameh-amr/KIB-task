@@ -29,6 +29,9 @@ export class TypeormGenreRepository
   ) {
     super(repo, GenreMapper);
   }
+  create(data: Genre): Promise<Genre> {
+    throw new Error('Method not implemented.');
+  }
 
   async findByName(name: string): Promise<Genre | null> {
     const entity = await this.repo.findOne({ where: { name } });
