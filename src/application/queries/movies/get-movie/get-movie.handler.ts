@@ -7,6 +7,6 @@ export class GetMovieHandler implements IQueryHandler<GetMovieQuery> {
   constructor(private readonly movies: MovieRepository) {}
 
   async execute(query: GetMovieQuery) {
-    return this.movies.findById(query.id); // controller can decide 404 on null
+    return this.movies.findById(query.id); 
   }
 }
