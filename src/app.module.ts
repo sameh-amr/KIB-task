@@ -4,6 +4,8 @@ import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PersistenceModule } from './infrastructure/persistence/persistence.module';
+import { ApplicationModule } from './application/application.module';
+import { InterfaceModule } from './interface/interface.module';
 
 @Module({
   imports: [
@@ -20,7 +22,9 @@ import { PersistenceModule } from './infrastructure/persistence/persistence.modu
         synchronize: false, 
       }),
     }),
-    PersistenceModule
+    PersistenceModule,
+    ApplicationModule,
+    InterfaceModule
   ],
   controllers: [AppController],
   providers: [AppService],
