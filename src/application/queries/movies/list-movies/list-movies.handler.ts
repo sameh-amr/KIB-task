@@ -6,11 +6,12 @@ import { MovieRepository } from '../../../../domain/repositories/movie.repositor
 export class ListMoviesHandler implements IQueryHandler<ListMoviesQuery> {
   constructor(private readonly movies: MovieRepository) {}
 
-  async execute(_: ListMoviesQuery) {
-    try {
-      return this.movies.findAll();
-    } catch (err) {
-      console.log(err);
-    }
+  async execute(q: ListMoviesQuery) {
+    return this.movies.search({
+      q: q.q,
+      genreId: q.genreId,
+      page: q.page,
+      limit: q.limit,
+    });
   }
 }
