@@ -14,6 +14,8 @@ import { RateMovieHandler } from './commands/ratings/rate-movie/rate-movie.handl
 import { AddFavoriteHandler } from './commands/favorites/add-favorite/add-favorite.handler';
 import { RemoveFavoriteHandler } from './commands/favorites/remove-favorite/remove-favorite.handler';
 import { ListFavoritesHandler } from './queries/favorites/list-favorites/list-favorites.handler';
+import { CachingModule } from 'src/infrastructure/cache/caching.module';
+
 
 @Module({
   imports: [CqrsModule, PersistenceModule, TmdbModule],
@@ -29,7 +31,8 @@ import { ListFavoritesHandler } from './queries/favorites/list-favorites/list-fa
     RateMovieHandler,
     AddFavoriteHandler,
     RemoveFavoriteHandler,
-    ListFavoritesHandler
+    ListFavoritesHandler,
+    CachingModule
   ],
   exports: [CqrsModule],
 })
