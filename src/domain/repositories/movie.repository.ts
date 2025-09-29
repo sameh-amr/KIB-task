@@ -1,8 +1,14 @@
+import { ListMoviesParams, MovieListItem, Paginated } from '../models/lists/movie-listing';
 import type { Movie } from '../models/movie';
 import { NewMovie } from '../models/new-movie';
 import { BaseRepository } from './base.repository';
 
-export abstract class MovieRepository extends BaseRepository<Movie, number,NewMovie> {
+export abstract class MovieRepository extends BaseRepository<
+  Movie,
+  number,
+  NewMovie
+> {
   abstract findByTmdbId(tmdbId: number): Promise<Movie | null>;
-   abstract setGenres(movieId: number, genreIds: number[]): Promise<void>;
+  abstract setGenres(movieId: number, genreIds: number[]): Promise<void>;
+  abstract search(params: ListMoviesParams): Promise<Paginated<MovieListItem>>;
 }
