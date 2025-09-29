@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: kib_postgres
+    environment:
+      POSTGRES_DB: kib
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"        # optional, for local psql access
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d kib || exit 1"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  app:
+    build: .
+    container_name: kib_api
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      NODE_ENV: production
+      PORT: 8080
+      # override DB host for container-to-container networking
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_NAME: kib
+
+      # cache + optional sync behavior
+      CACHE_TTL_MS: 60000
+      AUTO_SYNC_ON_BOOT: "1"
+      SYNC_MOVIE_PAGES: "1"
+
+      # TMDB keys (pull from your local env if you want)
+      TMDB_API_KEY: "${TMDB_API_KEY}"
+      TMDB_READ_TOKEN: "${TMDB_READ_TOKEN}"
+
+volumes:
+  pgdata:
