@@ -7,6 +7,9 @@ import { PersistenceModule } from '../infrastructure/persistence/persistence.mod
 import { TmdbModule } from '../infrastructure/clients/tmdb/tmdb.module';
 import { GetTmdbGenresHandler } from './queries/tmdb/get-tmdb-genres/get-tmdb-genres.handler';
 import { GetTmdbPopularMoviesHandler } from './queries/tmdb/get-tmdb-popular-movies/get-tmdb-popular-movies.handler';
+import { UpsertGenresHandler } from './commands/genres/upsert-genres/upsert-genres.handler';
+import { UpsertMoviesHandler } from './commands/movies/upsert-movies/upsert-movies.handler';
+import { SyncTmdbHandler } from './commands/sync/sync-tmdb/sync-tmdb.handler';
 
 @Module({
   imports: [CqrsModule, PersistenceModule, TmdbModule],
@@ -16,6 +19,9 @@ import { GetTmdbPopularMoviesHandler } from './queries/tmdb/get-tmdb-popular-mov
     GetMovieHandler,
     GetTmdbGenresHandler,
     GetTmdbPopularMoviesHandler,
+    UpsertGenresHandler,
+    UpsertMoviesHandler,
+    SyncTmdbHandler
   ],
   exports: [CqrsModule],
 })
