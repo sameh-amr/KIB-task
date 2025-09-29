@@ -10,6 +10,7 @@ import { GetTmdbPopularMoviesHandler } from './queries/tmdb/get-tmdb-popular-mov
 import { UpsertGenresHandler } from './commands/genres/upsert-genres/upsert-genres.handler';
 import { UpsertMoviesHandler } from './commands/movies/upsert-movies/upsert-movies.handler';
 import { SyncTmdbHandler } from './commands/sync/sync-tmdb/sync-tmdb.handler';
+import { RateMovieHandler } from './commands/ratings/rate-movie/rate-movie.handler';
 
 @Module({
   imports: [CqrsModule, PersistenceModule, TmdbModule],
@@ -21,7 +22,8 @@ import { SyncTmdbHandler } from './commands/sync/sync-tmdb/sync-tmdb.handler';
     GetTmdbPopularMoviesHandler,
     UpsertGenresHandler,
     UpsertMoviesHandler,
-    SyncTmdbHandler
+    SyncTmdbHandler,
+    RateMovieHandler,
   ],
   exports: [CqrsModule],
 })
