@@ -24,6 +24,9 @@ const MovieMapper: Mapper<Movie, MovieEntity> = {
     e.releaseDate = m.releaseDate;
     return e;
   },
+  fromCreate: function (data: Movie): MovieEntity {
+    throw new Error('Function not implemented.');
+  }
 };
 
 @Injectable()

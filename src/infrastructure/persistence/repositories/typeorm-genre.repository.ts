@@ -17,6 +17,9 @@ const GenreMapper: Mapper<Genre, GenreEntity> = {
     e.name = g.name;
     return e;
   },
+  fromCreate: function (data: Genre): GenreEntity {
+    throw new Error('Function not implemented.');
+  }
 };
 
 @Injectable()
