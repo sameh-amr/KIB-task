@@ -6,9 +6,10 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   await app.init();
+  app.setGlobalPrefix('api');
   const config = new DocumentBuilder()
     .setTitle('KIB Movies API')
-    .setDescription('Movie listing, genres, ratings, and favorites')
+    .setDescription('Movie listing, genres, ratings, favorites')
     .setVersion('1.0.0')
     .addTag('movies')
     .addTag('genres')
@@ -16,9 +17,9 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document);
 
-  
+  SwaggerModule.setup('docs', app, document, { useGlobalPrefix: true });
+
   const auto = (process.env.AUTO_SYNC_ON_BOOT ?? '1').toLowerCase();
   if (auto === '1' || auto === 'true') {
     const pages = Number(process.env.SYNC_MOVIE_PAGES ?? 1);
@@ -29,5 +30,6 @@ async function bootstrap() {
   }
   const port = Number(process.env.PORT ?? 8080);
   await app.listen(port);
+  console.log(`Swagger ready at ${await app.getUrl()}/docs`);
 }
 bootstrap();
