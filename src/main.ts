@@ -5,8 +5,8 @@ import { SyncTmdbCommand } from './application/commands/sync/sync-tmdb/sync-tmdb
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  await app.init();
   app.setGlobalPrefix('api');
+  await app.init();
   const config = new DocumentBuilder()
     .setTitle('KIB Movies API')
     .setDescription('Movie listing, genres, ratings, favorites')
