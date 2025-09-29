@@ -4,9 +4,11 @@ import { ListGenresHandler } from './queries/genres/list-genres/list-genres.hand
 import { ListMoviesHandler } from './queries/movies/list-movies/list-movies.handler';
 import { GetMovieHandler } from './queries/movies/get-movie/get-movie.handler';
 import { PersistenceModule } from '../infrastructure/persistence/persistence.module';
+import { TmdbModule } from '../infrastructure/clients/tmdb/tmdb.module';
+
 
 @Module({
-  imports: [CqrsModule, PersistenceModule],
+  imports: [CqrsModule, PersistenceModule,TmdbModule],
   providers: [ListGenresHandler, ListMoviesHandler, GetMovieHandler],
   exports: [CqrsModule],
 })
