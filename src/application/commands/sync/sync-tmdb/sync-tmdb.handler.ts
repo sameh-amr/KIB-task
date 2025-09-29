@@ -23,7 +23,9 @@ export class SyncTmdbHandler implements ICommandHandler<SyncTmdbCommand> {
 
   async execute({ pages }: SyncTmdbCommand) {
     try {
+        console.log('jereee')
       const genres = await this.tmdb.fetchGenres();
+    
       const gRes = await this.bus.execute(
         new UpsertGenresCommand(
           genres.map((g) => ({ tmdbId: g.id, name: g.name })),
@@ -48,6 +50,7 @@ export class SyncTmdbHandler implements ICommandHandler<SyncTmdbCommand> {
           });
         }
       }
+      
       await this.bus.execute(
         new UpsertMoviesCommand(
           fetched.map((m) => ({

@@ -1,35 +1,52 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { apiReference } from '@scalar/nestjs-api-reference';
 import { CommandBus } from '@nestjs/cqrs';
 import { SyncTmdbCommand } from './application/commands/sync/sync-tmdb/sync-tmdb.command';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
   app.setGlobalPrefix('api');
-  await app.init();
+
   const config = new DocumentBuilder()
     .setTitle('KIB Movies API')
     .setDescription('Movie listing, genres, ratings, favorites')
     .setVersion('1.0.0')
-    .addTag('movies')
-    .addTag('genres')
-    .addTag('favorites')
     .build();
-
   const document = SwaggerModule.createDocument(app, config);
 
+  const httpAdapter = app.getHttpAdapter();
+  const server = httpAdapter.getInstance();
+
+  server.get('/api/openapi.json', (_req: any, res: any) => res.json(document));
+
+  server.use(
+    '/api/reference',
+    apiReference({ spec: { url: '/api/openapi.json' } }),
+  );
+  await app.init();
   SwaggerModule.setup('docs', app, document, { useGlobalPrefix: true });
 
   const auto = (process.env.AUTO_SYNC_ON_BOOT ?? '1').toLowerCase();
   if (auto === '1' || auto === 'true') {
+    console.log('gere');
     const pages = Number(process.env.SYNC_MOVIE_PAGES ?? 1);
     const bus = app.get(CommandBus);
     try {
       await bus.execute(new SyncTmdbCommand(pages));
-    } catch (err) {}
+    } catch (err) {
+      console.log(err);
+    }
   }
+
   const port = Number(process.env.PORT ?? 8080);
   await app.listen(port);
-  console.log(`Swagger ready at ${await app.getUrl()}/docs`);
+
+  const url = await app.getUrl();
+  console.log(`Scalar  : ${url}/api/reference`);
+  console.log(`Swagger : ${url}/api/docs`);
+  console.log(`OpenAPI : ${url}/api/openapi.json`);
 }
 bootstrap();

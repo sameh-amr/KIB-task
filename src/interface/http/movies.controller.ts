@@ -16,6 +16,9 @@ import { GetMovieQuery } from '../../application/queries/movies/get-movie/get-mo
 import { RateMovieCommand } from '../../application/commands/ratings/rate-movie/rate-movie.command';
 import { AddFavoriteCommand } from '../../application/commands/favorites/add-favorite/add-favorite.command';
 import { RemoveFavoriteCommand } from '../../application/commands/favorites/remove-favorite/remove-favorite.command';
+import { ApiBody } from '@nestjs/swagger';
+import { RateMovieDto } from './dto/rate-movie.dto';
+import { FavoriteDto } from './dto/favorite.dto';
 
 type RateBody = { userId: string; rating: number };
 type FavoriteBody = { userId: string };
@@ -46,7 +49,7 @@ export class MoviesController {
     if (!movie) throw new NotFoundException('Movie not found');
     return movie;
   }
-
+  @ApiBody({ type: RateMovieDto })
   @Post(':id/ratings')
   async rate(@Param('id', ParseIntPipe) id: number, @Body() body: RateBody) {
     if (!body?.userId || typeof body.userId !== 'string') {
@@ -58,6 +61,7 @@ export class MoviesController {
     );
   }
   @Post(':id/favorite')
+  @ApiBody({ type: FavoriteDto })
   async addFavorite(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: FavoriteBody,
@@ -66,6 +70,7 @@ export class MoviesController {
   }
 
   @Delete(':id/favorite')
+  @ApiBody({ type: FavoriteDto })
   async removeFavorite(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: FavoriteBody,
