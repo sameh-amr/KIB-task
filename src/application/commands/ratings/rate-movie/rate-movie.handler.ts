@@ -3,7 +3,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { RateMovieCommand } from './rate-movie.command';
 import { MovieRepository } from '../../../../domain/repositories/movie.repository';
 import { RatingRepository } from '../../../../domain/repositories/rating.repository';
-import { MoviesCacheService } from 'src/infrastructure/cache/movies-cache.service';
+import { MoviesCacheService } from '../../../../infrastructure/cache/movies-cache.service';
 
 @CommandHandler(RateMovieCommand)
 export class RateMovieHandler implements ICommandHandler<RateMovieCommand> {

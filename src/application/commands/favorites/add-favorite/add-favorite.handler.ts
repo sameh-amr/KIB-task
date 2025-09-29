@@ -3,8 +3,8 @@ import { AddFavoriteCommand } from './add-favorite.command';
 import { FavoriteRepository } from '../../../../domain/repositories/favorite.repository';
 import { MovieRepository } from '../../../../domain/repositories/movie.repository';
 import { NotFoundException } from '@nestjs/common';
-import { MoviesCacheService } from 'src/infrastructure/cache/movies-cache.service';
-import { RatingRepository } from 'src/domain/repositories/rating.repository';
+import { MoviesCacheService } from '../../../../infrastructure/cache/movies-cache.service';
+import { RatingRepository } from '../../../../domain/repositories/rating.repository';
 
 @CommandHandler(AddFavoriteCommand)
 export class AddFavoriteHandler implements ICommandHandler<AddFavoriteCommand> {

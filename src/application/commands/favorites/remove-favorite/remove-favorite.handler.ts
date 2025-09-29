@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { RemoveFavoriteCommand } from './remove-favorite.command';
 import { FavoriteRepository } from '../../../../domain/repositories/favorite.repository';
-import { MoviesCacheService } from 'src/infrastructure/cache/movies-cache.service';
+import { MoviesCacheService } from '../../../../infrastructure/cache/movies-cache.service';
 
 @CommandHandler(RemoveFavoriteCommand)
 export class RemoveFavoriteHandler
