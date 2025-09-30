@@ -56,7 +56,7 @@ export class TypeormFavoriteRepository
       .createQueryBuilder()
       .delete()
       .from(FavoriteEntity)
-      .where('user_id = :userId AND movie_id = :movieId', { userId, movieId })
+      .where('userId = :userId AND movie_id = :movieId', { userId, movieId })
       .execute();
   }
 
