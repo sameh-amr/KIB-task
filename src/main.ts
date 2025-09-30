@@ -45,7 +45,5 @@ async function bootstrap() {
 
   const url = await app.getUrl();
   console.log(`Scalar  : ${url}/api/reference`);
-  console.log(`Swagger : ${url}/api/docs`);
-  console.log(`OpenAPI : ${url}/api/openapi.json`);
 }
 bootstrap();
